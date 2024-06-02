@@ -20,6 +20,10 @@ app.get('/products', (req,res)=>{
     res.json(database)
 })
 
+app.get('/products/:id', (req,res)=>{
+    res.status(200).json(database[req.params.id-1]) 
+})
+
 app.listen(8800, ()=>{
     console.log("Connected!")
 })
