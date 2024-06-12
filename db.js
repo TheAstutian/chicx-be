@@ -1,3 +1,30 @@
+import {MongoClient, ServerApiVersion} from 'mongodb';
+import dotenv from 'dotenv';
+
+dotenv.config()
+
+const URI = process.env.URI
+
+const client = new MongoClient(URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+})
+
+try{
+  await client.connect();
+  await client.db("gdvsta").command({ping:1})
+  console.log("Pinged DB. Successful")
+} catch(err){
+  console.log(err)
+}
+
+let db = client.db('gdvsta')
+
+
+
 export const database = [
     {
       id: 1,
@@ -198,3 +225,5 @@ export const database = [
       date: '2024-07-10',
     },
   ]
+
+  export default db; 

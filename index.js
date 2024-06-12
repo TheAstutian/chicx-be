@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from'cors'
 
-import { database } from './db.js';
+import db, { database } from './db.js';
 
 const app = express();
 app.use(cors())
