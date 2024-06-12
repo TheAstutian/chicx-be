@@ -1,11 +1,16 @@
 import express from 'express';
 import cors from'cors'
+import cookieParser from 'cookie-parser';
 
 import db, { database } from './db.js';
+import router from './routes.js';
 
 const app = express();
+const port = process.env.PORT || 4000; 
 app.use(cors())
-app.use(express.json())
+app.use(express.json()) 
+app.use(cookieParser())
+app.use(router)  
 
 const sample_db = {
     one: "sample 1",
@@ -26,4 +31,4 @@ app.get('/products/:id', (req,res)=>{
 
 app.listen(8800, ()=>{
     console.log("Connected!")
-})
+}) 
