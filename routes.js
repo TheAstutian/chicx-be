@@ -46,10 +46,10 @@ router.post('/auth/admin-login', async(req,res)=>{
             return res.status(401).json("User doesn't exist")
         }
         const validatePassowrd = await bcrypt.compare(req.body.password, checkUser.password)
-        if(!validatePassowrd){
-            return res.status(401).json("Invalid password")
+        if(!validatePassowrd){ 
+            return res.status(401).json("Wrong username or password")
         }
-        const user={
+        const user={ 
             email: checkUser.email,
             type: checkUser.type,
             clearance:checkUser.clearance,  
@@ -60,7 +60,43 @@ router.post('/auth/admin-login', async(req,res)=>{
     }
 })
 
+ 
 
+//add new product
 
+router.post('/auth/admin-add', async (req,res)=>{
+    console.log(req.body) 
+
+    try{
+        let newProduct={
+            name:req.body.name,
+            brand:req.body.brand,
+            price:req.body.price,
+            discount:req.body.discount,
+            primaryCategory:req.body.category,
+            imageUrl:req.body.imglnk,
+            date:req.body.date,
+            description:req.body.description,
+        }
+
+        let collection = db.collection('gdvsta-store')
+        await collection.insertOne(newProduct)
+
+    }catch(err){
+        console.log(err)
+    }
+
+    res.status(200).json('new item added successfully')
+})
+
+//get store
+router.get ('/store', async(req,res)=>{
+    try{
+        const collection = db.collection('gdvsta-store')
+        const items = await collection.find({}).toArray()
+        res.status(200).send(items)
+    }catch(err){console.log(err)}
+
+})
 
 export default router; 
