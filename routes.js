@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import {BSON, ObjectId} from 'mongodb';
 
-import db from './db.js'
+import db, {database} from './db.js'
 
 const router = express.Router();
 
@@ -98,5 +98,30 @@ router.get ('/store', async(req,res)=>{
     }catch(err){console.log(err)}
 
 })
+
+//get single item page
+
+router.get('/products/:id', async (req,res)=>{
+    if (req.params.id<35){
+        res.status(200).json(database[req.params.id-1]) 
+        return
+    }
+    
+    try{
+        const collection = db.collection('gdvsta-store')
+        const idQuery = new ObjectId(req.params.id)
+        const item = await collection.findOne({
+            _id: idQuery
+        })
+        
+     res.status(200).json(item) 
+
+    }catch(err){
+        console.log(err)
+    }
+
+
+})
+
 
 export default router; 
