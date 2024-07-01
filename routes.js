@@ -60,12 +60,9 @@ router.post('/auth/admin-login', async(req,res)=>{
     }
 })
 
- 
-
 //add new product
-
 router.post('/auth/admin-add', async (req,res)=>{
-    console.log(req.body) 
+    
 
     try{
         let newProduct={
@@ -89,6 +86,29 @@ router.post('/auth/admin-add', async (req,res)=>{
     res.status(200).json('new item added successfully')
 })
 
+//update product 
+router.patch('/auth/admin-update/', async(req,res)=>{
+    try{                    
+        const query ={_id: new ObjectId(req.body.id)}
+        const updates ={
+            $set:{
+                name:req.body.name,
+                brand:req.body.brand,
+                price:req.body.price,
+                discount:req.body.discount,
+                primaryCategory:req.body.category,
+                imageUrl:req.body.imglnk,
+                description:req.body.description,
+            }
+        }
+        let collection = await db.collection('gdvsta-store')
+        let result = await collection.updateOne(query,updates)
+        res.send(result).status(200);
+    }catch(err){
+        console.log(err)
+    }
+})
+
 //get store
 router.get ('/store', async(req,res)=>{
     try{
@@ -100,7 +120,6 @@ router.get ('/store', async(req,res)=>{
 })
 
 //get single item page
-
 router.get('/products/:id', async (req,res)=>{
     if (req.params.id<35){
         res.status(200).json(database[req.params.id-1]) 
@@ -123,5 +142,16 @@ router.get('/products/:id', async (req,res)=>{
 
 })
 
+//delete product
+router.delete('/auth/admin-delete/:id', async(req,res)=>{
+    try{
+        const query = {_id: new ObjectId(req.params.id)}
+        const collection = db.collection('gdvsta-store')
+        let result = await collection.deleteOne(query);
+        res.send(result).status(200)
+    }catch(err){
+        console.log(err)
+    }
+})
 
 export default router; 
