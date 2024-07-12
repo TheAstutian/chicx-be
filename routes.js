@@ -118,7 +118,7 @@ router.patch('/auth/admin-update/', async(req,res)=>{
 router.get ('/store', async(req,res)=>{
     try{
         const collection = db.collection('gdvsta-store')
-        const items = await collection.find({}).toArray()
+        const items = await collection.find({}).sort({date:-1}).toArray()
         res.status(200).send(items)
     }catch(err){console.log(err)}
 
