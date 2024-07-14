@@ -117,25 +117,32 @@ router.patch('/auth/admin-update/', async(req,res)=>{
 
 // experimental endpoint
 
-router.get('/store/', async (req,res)=>{
+router.get('/store', async (req,res)=>{
 
-   const page = req.query.page*1 || 8; 
+   const page = (req.query.page-1)*1 || 0; 
    const limit = req.query.rows*1 || 10;
    const skip = page*limit;
+
+   console.log(skip,page)
 
 const collection = db.collection('gdvsta-store')
 const items = await collection.aggregate([
     { "$facet": {
       "totalData": [
         { "$match": { }},
+        {"$sort":{date:-1}},
         { "$skip": skip },
-        { "$limit": limit }
+        {"$limit": 10},
+        /*
+        { "$limit": limit },
+        {"$sort": {date: -1}}*/
+        
       ],
       "totalCount": [
         { "$count": "count" }
       ]
     }}
-  ]).sort({date:-1}).toArray()
+  ]).toArray()
 res.status(200).json(items)
 
 })
