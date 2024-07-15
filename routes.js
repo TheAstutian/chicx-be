@@ -121,29 +121,58 @@ router.get('/store', async (req,res)=>{
 
    const page = (req.query.page-1)*1 || 0; 
    const limit = req.query.rows*1 || 10;
-   const skip = page*limit;
+   const skip = page*limit; 
+   const category = req.query.category;
+   
+try{ 
+    const collection = db.collection('gdvsta-store')
+    if(category){
 
-   console.log(skip,page)
 
-const collection = db.collection('gdvsta-store')
-const items = await collection.aggregate([
-    { "$facet": {
-      "totalData": [
-        { "$match": { }},
-        {"$sort":{date:-1}},
-        { "$skip": skip },
-        {"$limit": 10},
-        /*
-        { "$limit": limit },
-        {"$sort": {date: -1}}*/
+    
+    const items = await collection.aggregate([
+        { "$facet": {
+        "totalData": [
+            { "$match": {primaryCategory: {$regex: category} }}, 
+            {"$sort":{date:-1}},
+            { "$skip": skip },
+            {"$limit": 10},
+            
+        ],
+        "totalCount": [
+            { "$match": { primaryCategory: { $regex: category } } },
+            { "$count": "count" }
+        ]
+        }}
+    ]).toArray() 
+
+    res.status(200).json(items)
+    }
+    else if (!category){
         
-      ],
-      "totalCount": [
-        { "$count": "count" }
-      ]
-    }}
-  ]).toArray()
-res.status(200).json(items)
+    const items = await collection.aggregate([
+        { "$facet": {
+        "totalData": [
+            { "$match": { }}, 
+            {"$sort":{date:-1}},
+            { "$skip": skip },
+            {"$limit": 10},
+            /*     
+            { "$limit": limit },
+            {"$sort": {date: -1}}*/
+            
+        ],
+        "totalCount": [
+            { "$count": "count" }
+        ]
+        }}
+    ]).toArray() 
+
+    res.status(200).json(items)
+    }
+}catch(err){
+    console.log(err) 
+} 
 
 })
 
