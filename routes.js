@@ -122,13 +122,14 @@ router.get('/store', async (req,res)=>{
    const page = (req.query.page-1)*1 || 0; 
    const limit = req.query.rows*1 || 10;
    const skip = page*limit; 
-   const category = req.query.category;
+   const category = req.query.category || '';
+   const search = req.query.searchquery;
+   
+
    
 try{ 
     const collection = db.collection('gdvsta-store')
     if(category){
-
-
     
     const items = await collection.aggregate([
         { "$facet": {
@@ -147,6 +148,25 @@ try{
     ]).toArray() 
 
     res.status(200).json(items)
+    } else if(search){
+        console.log(search)
+        const items = await collection.aggregate([
+            { "$facet": {
+            "totalData": [
+                { "$match": {description: {$regex: search} },}, 
+                {"$sort":{date:-1}},
+                { "$skip": skip },
+                {"$limit": 10},
+                
+            ],
+            "totalCount": [
+                { "$match": { description: { $regex: search } } },
+                { "$count": "count" }
+            ]
+            }}
+        ]).toArray() 
+
+        res.status(200).json(items)
     }
     else if (!category){
         
