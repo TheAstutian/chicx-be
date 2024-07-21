@@ -153,7 +153,7 @@ try{
         const items = await collection.aggregate([
             { "$facet": {
             "totalData": [
-                { "$match": {description: {$regex: search} },}, 
+                { "$match": {$or: [{name: {$regex: search, $options: "i"}}, {description: {$regex: search, $options: "i"}}]}}, 
                 {"$sort":{date:-1}},
                 { "$skip": skip },
                 {"$limit": 10},
