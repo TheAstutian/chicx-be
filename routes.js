@@ -62,8 +62,7 @@ router.post('/auth/admin-login', async(req,res)=>{
 
 //add new product
 router.post('/auth/admin-add', async (req,res)=>{
-    console.log(req.body.popular)
-    console.log(req.body.deal)
+  
 
     try{
         let newProduct={
@@ -73,6 +72,9 @@ router.post('/auth/admin-add', async (req,res)=>{
             discount:req.body.discount,
             primaryCategory:req.body.category,
             imageUrl:req.body.imglnk,
+            imageUrl2:req.body.imglnk2,
+            imageUrl3:req.body.imglnk3,
+            imageUrl4:req.body.imglnk4,
             date:req.body.date,
             description:req.body.description,
             deal: req.body.deal,
@@ -101,6 +103,9 @@ router.patch('/auth/admin-update/', async(req,res)=>{
                 discount:req.body.discount,
                 primaryCategory:req.body.category,
                 imageUrl:req.body.imglnk,
+                imageUrl2:req.body.imglnk2,
+                imageUrl3:req.body.imglnk3,
+                imageUrl4:req.body.imglnk4,
                 description:req.body.description,
                 deal: req.body.deal,
                 popular: req.body.popular,
@@ -149,7 +154,7 @@ try{
 
     res.status(200).json(items)
     } else if(search){
-        console.log(search)
+        
         const items = await collection.aggregate([
             { "$facet": {
             "totalData": [
