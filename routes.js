@@ -15,8 +15,8 @@ router.post('/auth/admin-register', async(req,res)=>{
     let newDocument={
         email: req.body.inputs.email,
         password: passwordHash,
-        type:"admin",
-        clearance:"1"
+        type:"user",
+        clearance:"0"
     }
     let collection = db.collection('gdvsta-users')
     const userCheck = await collection.findOne({email:req.body.inputs.email})
