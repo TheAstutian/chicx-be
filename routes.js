@@ -16,7 +16,8 @@ router.post('/auth/admin-register', async(req,res)=>{
         email: req.body.inputs.email,
         password: passwordHash,
         type:"user",
-        clearance:"0"
+        clearance:"0",
+        userid: Date.now()
     }
     let collection = db.collection('gdvsta-users')
     const userCheck = await collection.findOne({email:req.body.inputs.email})
@@ -80,6 +81,7 @@ router.post('/auth/admin-add', async (req,res)=>{
             description:req.body.description,
             deal: req.body.deal,
             popular: req.body.popular,
+            productID: Date.now()
         }
 
         let collection = db.collection('gdvsta-store')
