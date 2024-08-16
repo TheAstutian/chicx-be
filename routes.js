@@ -129,7 +129,7 @@ router.patch('/auth/admin-update/', async(req,res)=>{
 router.get('/store', async (req,res)=>{
 
    const page = (req.query.page-1)*1 || 0; 
-   const limit = req.query.rows*1 || 10;
+   const limit = req.query.rows*1 || 20;
    const skip = page*limit; 
    const category = req.query.category || '';
    const search = req.query.searchquery;
@@ -146,7 +146,7 @@ try{
             { "$match": {primaryCategory: {$regex: category} }}, 
             {"$sort":{date:-1}},
             { "$skip": skip },
-            {"$limit": 10},
+            {"$limit": 20},
             
         ],
         "totalCount": [
@@ -165,7 +165,7 @@ try{
                 { "$match": {$or: [{name: {$regex: search, $options: "i"}}, {description: {$regex: search, $options: "i"}}]}}, 
                 {"$sort":{date:-1}},
                 { "$skip": skip },
-                {"$limit": 10},
+                {"$limit": 20},
                 
             ],
             "totalCount": [
@@ -185,7 +185,7 @@ try{
             { "$match": { }}, 
             {"$sort":{date:-1}},
             { "$skip": skip },
-            {"$limit": 10},
+            {"$limit": 20},
             /*     
             { "$limit": limit },
             {"$sort": {date: -1}}*/
