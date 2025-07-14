@@ -254,7 +254,8 @@ router.get ('/products', async(req,res)=>{
     try{
         const collection = db.collection('gdvsta-store')
         const popularItems =  await collection.find({popular:true}).toArray()
-        res.status(200).send(popularItems)
+        const data = popularItems.reverse().slice(0,12)
+        res.status(200).send(data)
         
     } catch(err){console.log(err)}
 })
@@ -265,7 +266,8 @@ router.get ('/deals', async(req,res)=>{
     try{
         const collection = db.collection('gdvsta-store')
         const deals =  await collection.find({deal:true}).toArray()
-        res.status(200).send(deals)
+        const reverseDeals = deals.reverse().slice(0,6)
+        res.status(200).send(reverseDeals)
         
     } catch(err){console.log(err)}
 })
