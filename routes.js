@@ -124,49 +124,6 @@ router.post('/auth/admin-register', async(req,res)=>{
     }
 
 
-/*try{
-
-    //create and send email 
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 587, 
-      secure: false,
-        auth: {
-            user: '99bc3b001@smtp-brevo.com',
-            pass: 'xsmtpsib-d67ed414ca468867b74a895f65b0c518889b96d01d1a16490b03bccafbe83e77-qiXI6OrhAzWp7wPj'
-        },
-    })
-    const verificationLink = `http://${process.env.SERVER_URL}/verify/${req.body.inputs.email}/${verificationToken}`
-    const mailOptions = {
-        from: 'Goldyvhista Hubz <service@goldyvhistahubz.com>',
-        to: req.body.inputs.email, 
-        subject: "Please verify your email address", 
-        html: 
-        `
-        <p> Hello ${req.body.inputs.email}, </p>
-        <p>Please click 
-            <a href=${verificationLink}><b>Here</b></a>
-          to verify your email address: </p>
-        <p>Thank you!</p>
-        `
-    } 
-
-    transporter.sendMail(mailOptions, (error,info)=>{
-        if(error){
-            console.error('Error sending email:', error);
-        } else {
-            console.log('Email sent:', info);
-        }
-    })
-    
-
-
-}catch (err){
-    console.log(err)
-} 
-*/
-
  try{
     
     let newDocument={
@@ -702,7 +659,7 @@ try{
                 { "$match": { description: { $regex: search } } },
                 { "$count": "count" }
             ]
-            }}
+            }} 
         ]).toArray() 
 
         res.status(200).json(items)
