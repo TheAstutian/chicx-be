@@ -62,7 +62,7 @@ router.post('/auth/admin-register', async(req,res)=>{
     const apiKey = process.env.BREVO_API; 
     const url = process.env.BREVO_URL
     const emailData = {
-        sender: {
+        sender: { 
             name: 'Goldyvhista Hubz',
             email: 'cryptospeaks@gmail.com' 
         }, 
