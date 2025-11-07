@@ -137,7 +137,6 @@ router.post('/auth/admin-register', async(req,res)=>{
         // clearance:"0",
         // userid: Date.now()
     }
-    console.log(newDocument)
    
         await collection.insertOne(newDocument); 
     
@@ -158,7 +157,6 @@ router.get('/verify/:email/:token', async(req,res)=>{
   
     try {
         const { email, token } = req.params;
-        //console.log(email, token)
 
         // 1. Find the user in the database using the email and token.
         //    Make sure the token hasn't expired.
@@ -230,7 +228,7 @@ router.post('/turnstile', async(req,res)=>{
 // order setup
 
 router.post('/order', async (req,res)=>{
-    //console.log(req.body.order.cart)
+    
 
     const orderObject = req.body.order 
     orderObject.ID = randomId()
@@ -279,7 +277,7 @@ router.post('/order', async (req,res)=>{
             to: [
                 {email: orderObject.userDetails.email }
             ],
-            subject: 'Goldyvhista Hubz -- Verify your email ', 
+            subject: 'Goldyvhista Hubz -- Order Confirmation ', 
             htmlContent: `
              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
             
@@ -389,7 +387,7 @@ router.post('/order', async (req,res)=>{
             console.log('error happeed', err)
         } */
       }
-//        console.log(orderObject.timeStamp, 'here', orderObject.date.toString())
+
     }catch(err){
         console.log(err)
     } 
@@ -465,7 +463,7 @@ router.patch('/user/update/:email', async(req,res) =>{
             const collection = db.collection('gdvsta-users')
             const userExists = await collection.findOne({email:email.email})
             if (!userExists){
-                console.log('User doesnt exists' )
+                ('User doesnt exists' )
                 return res.status(400).json({
                     message: "User not found"
                 })
@@ -791,14 +789,17 @@ router.get ('/products', async(req,res)=>{
     try{
         const collection = db.collection('gdvsta-store')
         const popularItems =  await collection.find({popular:true}).toArray()
-        const data = popularItems.reverse().slice(0,12)
-        res.status(200).send(data)
+        const popular = popularItems.reverse().slice(0,12)
+        const deals =  await collection.find({deal:true}).toArray()
+        const reverseDeals = deals.reverse().slice(0,6)
+        const data = {popularProducts:popular, latestDeals: reverseDeals}
+        res.status(200).json(data)
         
     } catch(err){console.log(err)}
 })
 
 
-//get deals
+/*get deals
 router.get ('/deals', async(req,res)=>{
     try{
         const collection = db.collection('gdvsta-store')
@@ -807,7 +808,8 @@ router.get ('/deals', async(req,res)=>{
         res.status(200).send(reverseDeals)
         
     } catch(err){console.log(err)}
-})
+}) 
+*/
 
  
 
