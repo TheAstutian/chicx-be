@@ -564,7 +564,9 @@ router.post('/auth/admin-add', async (req,res)=>{
             imageUrl4:req.body.imglnk4,
             date:req.body.date,
             description:req.body.description,
+            highlights:req.body.highlights,
             deal: req.body.deal,
+            tags: req.body.tags,
             popular: req.body.popular,
             productID: Date.now()
         }
@@ -573,6 +575,7 @@ router.post('/auth/admin-add', async (req,res)=>{
         await collection.insertOne(newProduct)
 
     }catch(err){
+        
         console.log(err)
     }
 
@@ -596,14 +599,18 @@ router.patch('/auth/admin-update/', async(req,res)=>{
                 imageUrl3:req.body.imglnk3,
                 imageUrl4:req.body.imglnk4,
                 description:req.body.description,
+                highlights:req.body.highlights,
                 deal: req.body.deal,
+                tags: req.body.tags,
                 popular: req.body.popular,
             }
         }
+        
         let collection = await db.collection('gdvsta-store')
         let result = await collection.updateOne(query,updates)
         res.send(result).status(200);
     }catch(err){
+        
         console.log(err)
     }
 })
