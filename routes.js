@@ -719,7 +719,7 @@ router.get('/relateditems/:id', async (req,res) =>{
                     }
                 }, 
                 {
-                    $sample: {size: 6}
+                    $sample: {size: 8}
                 }
             ]).toArray()
 
@@ -731,7 +731,7 @@ router.get('/relateditems/:id', async (req,res) =>{
                     }
                 }, 
                 {
-                    $sample: {size: 6}
+                    $sample: {size: 8}
                 }
             ]).toArray()
 
