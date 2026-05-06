@@ -359,12 +359,95 @@ router.post('/order', async (req,res)=>{
             </div>
             `*/
         }
+
+        const businessEmailData = {
+             sender: {
+                name: 'Goldyvhista Hubz',
+                email: 'cryptospeaks@gmail.com' 
+            }, 
+            to: [
+                {email: 'goldyvhistahuzz@gmail.com' /*Change to busineseamil*/ }
+            ],
+            subject: 'New Order Alert! Goldyvhista Hubz ', 
+            htmlContent: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
+            
+            <div style="padding: 10px; text-align: center; background-color: #fff;">
+                <img src="${logoUrl}" alt="Goldyvhista Hubz Logo" style="max-width: 180px; height: auto; border: 0;" />
+            </div>
+            
+            <div style="padding: 20px;">
+                <h1 style="color: black; font-size: 24px;">You have a new order! </h1>
+                <p style="font-size: 16px; color: #333;">
+                    Order ID: **#${orderObject.ID}** 
+                </p>
+                <p style="font-size: 16px; color: #333;">
+                    Customer Name: <b>${orderObject.userDetails.name}</b>
+                </p>
+
+                <p style="font-size: 16px; color: #333;">
+                    Customer Phone Number: <b>${orderObject.userDetails.phone}</b>
+                </p>
+
+                <p style="font-size: 16px; color: #333;">
+                    Customer Email: <b>${orderObject.userDetails.email}</b>
+                </p>
+
+                <p style="font-size: 16px; color: #333;">
+                    Customer Address: <b>${orderObject.userDetails.address1}</b>
+                </p>
+                <p style="font-size: 16px; color: #333;">
+                    Order Time and Date: ${orderObject.date}
+                </p>
+                
+                <h2 style="font-size: 18px; color: #333; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Order Summary</h2>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin-top: 20px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f0f0f0;">
+                            <th colspan="2" style="padding: 10px; text-align: left; color: #333; font-size: 14px;">Product</th>
+                            <th style="padding: 10px; text-align: center; color: #333; font-size: 14px;">Qty</th>
+                            <th style="padding: 10px; text-align: right; color: #333; font-size: 14px;">Price</th>
+                            <th style="padding: 10px; text-align: right; color: #333; font-size: 14px;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${cartItemsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" style="padding: 15px 10px 5px 10px; text-align: right; font-size: 16px; font-weight: bold; color: #333;">Grand Total:</td>
+                            <td style="padding: 15px 10px 5px 10px; text-align: right; font-size: 18px; font-weight: bold; color: #FFA500;">
+                                ₦${orderObject.total.toLocaleString()}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <p style="font-size: 12px; color: #888; text-align: center; margin-top: 40px;">
+                    Need help? Reply to this email or call us at (123) 456-7890.
+                </p>
+            </div>
+        </div>
+            `
+        }
+        //email to customer
         const response = await axios.post(url, emailData, {
             headers: {
                 'Content-Type': 'application/json',
                 'api-key': apiKey
             }
         })
+
+        //email to business 
+
+        const businessEmailRequest = await axios.post(url, businessEmailData, {
+            headers: {
+                'Content-Type': 'application/json',
+                'api-key': apiKey 
+            }
+        })
+
         if (response){
             res.status(200).json({
                 message: "Order placed!"
