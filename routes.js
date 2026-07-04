@@ -978,7 +978,7 @@ const userEmail = req.body.email
       const checkUser = await collection.findOne({
             email: userEmail
         })
-        if(!checkUser){
+        if(!checkUser){ 
                 //if it doesn't exist, create a new 6 digit code, store it in a variable, hash it and store that in another variable. 
             const verificationCode = generateToken()
             const tokenHash = hashCode(verificationCode); 
