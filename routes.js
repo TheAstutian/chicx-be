@@ -4,6 +4,7 @@ import {BSON, ObjectId} from 'mongodb';
 import jsonwebtoken from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
+import crypto from 'crypto';
 
 
 import db, {database} from './db.js'
@@ -229,7 +230,6 @@ router.post('/turnstile', async(req,res)=>{
 
 router.post('/order', async (req,res)=>{
     
-
     const orderObject = req.body.order 
     orderObject.ID = randomId()
     orderObject.timeStamp = Date.now()
@@ -325,39 +325,7 @@ router.post('/order', async (req,res)=>{
                 </p>
             </div>
         </div>
-
             `
-
-            /*`
-            <div>
-            <div><h2><img src="https://ibb.co/VpNv76Gk" /> Goldyvhista Hubz</h2></div>
-            <div>
-            <h2> Order confirmation </h2>
-            <p> <b>${orderObject.userDetails.name} </b> Thank you for your order! </p>
-            <p>We've recieved your order and will contact you as soon as your package is shpped. You can find details of your purchase below. </p>
-            </div>
-            <div>
-            <h2> Order Summary </h2>
-            <p>${orderObject.date}</p>
-            <p>${orderObject.ID}</p>
-            ${
-                orderObject.cart.map( item=>{
-                (
-                    <div>
-                        <img src={item.imageUrl} />
-                         <p>Product Name: {item.name}</p>
-                         <p> Product ID: {item.productID}</p>
-                        <p>Quantity: {item.quantity} at {item.sellingPrice}</p>
-                        <p>Total: N{item.sellingPrice*item.quanity}</p>
-                    </div>
-                )    
-                })
-            }
-            <p>Grand Total: ${orderObject.total} </p>
-            </div>
-
-            </div>
-            `*/
         }
 
         const businessEmailData = {
@@ -475,8 +443,6 @@ router.post('/order', async (req,res)=>{
         console.log(err)
     } 
 })
-
-
 
 
 //update user details 
@@ -662,7 +628,7 @@ router.post('/auth/admin-add', async (req,res)=>{
         console.log(err)
     }
 
-    res.status(200).json('new item added successfully')
+    return res.status(200).json('new item added successfully')
 })
 
 //update product 
@@ -706,12 +672,20 @@ router.get('/store', async (req,res)=>{
    const page = (req.query.page-1)*1 || 0; 
    const limit = req.query.rows*1 || 20;
    const skip = page*limit; 
-   const category = req.query.category || '';
-   const search = req.query.searchquery;
+   const category = req.query.category? req.query.category : '';
+   const search = req.query.searchquery? req.query.searchquery : ""; 
+   let tagsArray = [];
+if (req.query.tags) {
+      const rawTags = Array.isArray(req.query.tags) ? req.query.tags : [req.query.tags];
+    
+    // 2. Split any strings that contain commas and flatten the result
+    tagsArray = rawTags
+        .flatMap(tag => tag.split(','))  // Splits "cookware,baking" into ["cookware", "baking"]
+        .map(tag => tag.trim())          // Removes any accidental spaces
+        .filter(tag => tag !== '');    
+}
    
-
-   
-try{ 
+ try{ 
     const collection = db.collection('gdvsta-store')
     if(category){
     
@@ -752,8 +726,26 @@ try{
 
         res.status(200).json(items)
     }
-    else if (!category){
-        
+    else if (tagsArray.length> 0) {
+        const items = await collection.aggregate([
+            { "$facet": {
+            "totalData": [
+                // $in matches if ANY tag in tagsArray exists inside the document's tags array field
+                { "$match": { tags: { $in: tagsArray } } }, 
+                { "$sort": { date: -1 } },
+                { "$skip": skip },
+                { "$limit": limit }
+            ],
+            "totalCount": [
+                { "$match": { tags: { $in: tagsArray } } },
+                { "$count": "count" }
+            ]
+            }}
+        ]).toArray();
+        return res.status(200).json(items);
+    
+    }
+    else {
     const items = await collection.aggregate([
         { "$facet": {
         "totalData": [
@@ -889,6 +881,269 @@ router.get ('/products', async(req,res)=>{
 })
 
 
+function generateToken (){
+    const token = crypto.randomInt(100000, 1000000)
+    return token.toString()
+}
+
+function hashCode(code){
+    return crypto.createHash('sha256').update(code).digest('hex')
+}
+
+/*const one = hashCode("123456")
+const two = hashCode("123456")
+const three = hashCode("123455")
+const four = hashCode("123445")
+
+console.log ("one:", one, " /two: ", two, " /three: ", three, " /four: ", four)
+*/
+
+const sendCodeToEmail = async (code, userEmail)=> {
+ 
+         const apiKey = process.env.BREVO_API; 
+        const url = process.env.BREVO_URL;
+        const logoUrl = 'https://i.ibb.co/5x95NZ3J/GDVSTA.png'
+
+     const emailData = {
+            sender: {
+                name: 'Goldyvhista Hubz',
+                email: 'cryptospeaks@gmail.com' 
+            }, 
+            to: [
+                {email: userEmail }
+            ],
+            subject: `Your verification code`, 
+            htmlContent: `
+
+             <div style="font-family: Arial, sans-serif; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
+            
+            <div style="padding: 20px; text-align: center; background-color: #f8f8f8;">
+                <img src="${logoUrl}" alt="Goldyvhista Hubz Logo" style="max-width: 180px; height: auto; border: 0;" />
+            </div>
+            
+            <div style="padding: 20px;">
+                <h1 style="color: #333; font-size: 14px;">Verify your email</h1>
+                <p style=" color: #333;">
+                   Hi <b>${userEmail}</b>, </br>
+                   You requested a code to verify your email on GoldyvhistaHubz.com. 
+                </p>
+                <p> Here is your one-time passode: <b>${code}</b></br>
+                <p><i>Your code expires in 5 minutes</i></p>
+                <p>Thank you. </p></br>
+                <p>PS: <i>Ignore this email if you didn't request a code from Goldyvhistahubz.com<i></p>
+            </div>
+            </div>
+             `
+        }
+        try{
+                const shootCodeToMail = await axios.post(url, emailData, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'api-key': apiKey 
+                    }
+                })
+ 
+                if (shootCodeToMail){
+                   return ({
+                        message: "Message sent"
+                    })
+                } else return ({
+                    message: "Code couldn't be sent. Try again later."
+                })
+        } catch(err){
+            console.log(err)
+        }
+}
+
+//const randomToken = generateToken()
+//sendCodeToEmail(randomToken, 'cryptospeaks@gmail.com')
+
+
+//sends email verification code to user
+router.post('/tokenRequest', async(req,res)=>{
+    
+const userEmail = req.body.email 
+ //get email
+    //verify email using regex if wrong, return error.message
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if(!emailRegex.test(userEmail)){
+        console.log('failed regex')
+        return res.status(400).json("Invalid email ")
+    }
+
+//check verification database for email 
+   try{
+     const collection = db.collection('gdvsta-email-verification')
+    
+      const checkUser = await collection.findOne({
+            email: userEmail
+        })
+        if(!checkUser){
+                //if it doesn't exist, create a new 6 digit code, store it in a variable, hash it and store that in another variable. 
+            const verificationCode = generateToken()
+            const tokenHash = hashCode(verificationCode); 
+            const newEntry = {
+                 email: userEmail,
+                tokenHash: tokenHash, 
+                verifiedStatus: false,
+                createdAt: new Date()
+            }
+            try{
+                 const addTokenRecordtoDB = await collection.insertOne(newEntry)
+                 if (!addTokenRecordtoDB){
+                  return  res.status(400).json({"errorMessage": "Some error occurred. Please try again"})
+                 }else if (addTokenRecordtoDB){
+                   const success=  await sendCodeToEmail(verificationCode, userEmail)
+                   if (success){
+                        return res.status(200).json({"Message": "Verification code successfully sent to your email."})
+                   }
+                    
+                 }
+
+            }catch(e){
+                console.log (e)
+            }
+    //trigger email send with code. if error, return with an error.message to frontend ('emil doesn't exist, some other error, etc), if not...
+        } else if(checkUser){
+            //update first and trigger 
+            const generateNewVerificationCode = generateToken()
+            const tokenHash = hashCode(generateNewVerificationCode)
+            const updateTokenRecordInDB = await collection.updateOne(
+            {email: userEmail},
+            {
+                $set: {
+                    tokenHash: tokenHash, 
+                    createdAt: new Date() 
+                }
+            }
+            )
+            if(!updateTokenRecordInDB){
+               return res.status(400).json({
+                    status: "failed",
+                    message: "Some error occurred. Please try again."
+                })
+            } else if(updateTokenRecordInDB){
+                 await sendCodeToEmail(generateNewVerificationCode, userEmail)
+                 return res.status(200).json({
+                    "Status": 'Success',
+                    "Message": "Verification code successfully sent to your email."
+                })
+            }
+        }
+
+ 
+   }catch(error){
+
+    if (error.message) { 
+        res.status(400).json({"message": error.message})
+    } else res.status(400).json({"message": "Some error occurred", "error": error})
+   }
+
+
+    // create a new entry in database with the fields, email, hashed code, created at, and set it to be deleted in 5 minutes from createdAt. 
+    
+    
+    //if it exists, generate a new 6 digit code and hash and store in variables.
+    //trigge email and send with code. if error, return with an error.message to frontend ('emil doesn't exist, some other error, etc, if not...  
+    // Then update existing entry fields: hashed code, and created at. 
+
+
+})
+
+router.post('/verifyToken', async (req,res)=>{
+
+//get code and email from client
+const email = req.body.email; 
+const code = req.body.code; 
+
+
+ if( !email || !code){
+
+        return res.status(200).json({
+                    "status": "Failed",
+                    "message": "Please enter a code. "
+                })
+    }
+//Regex code and email
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if(!emailRegex.test(email)){
+        
+        return res.status(200).json({
+                    "status": "Failed",
+                    "message": "Invalid email format. "
+                })
+        
+    }
+
+    const codeRegex = /^\d{6}$/;
+    if(!codeRegex.test(code)){
+        
+     return res.status(200).json({
+                    "status": "Failed",
+                    "message": "Invalid code. Code must be a 6-digit number "
+                })   
+    }
+
+    //Check if email exists in database.
+     const collection = db.collection('gdvsta-email-verification')
+    
+      const checkUser = await collection.findOne({
+            email: email
+        })
+        //If it doesn't, return with error message--Expired code? Request a new one. 
+        if (!checkUser){
+            return res.status(200).json({
+                "status": "failed",
+                "message": "Expired code. Request a new one"
+            })
+        } else if (checkUser){
+        //If it does, hash code, and compare with hashed code in database. 
+            const hashToken = hashCode(code)
+            const buffer1 = Buffer.from(hashToken, 'hex');
+            const buffer2 = Buffer.from(checkUser.tokenHash, 'hex');
+            
+            if (buffer1.length !== buffer2.length) {
+                return res.status(200).json({
+                    "status": "Failed",
+                    "message": "Invalid code"
+                });
+            } else {
+                const compareCodes = crypto.timingSafeEqual(buffer1, buffer2);
+                if(!compareCodes){
+                     return res.status(200).json({
+                    "status": "Failed",
+                    "message": "Wrong code. Request a new one"
+                });
+                } else if(compareCodes){
+                    return res.status(200).json({
+                        "status": "Success",
+                        "message": "Email address verified"
+                    })
+                }
+            }
+            
+            
+
+
+
+//if it doesn't match, return with error message -- wrong code. Request a new one?
+//If it matches, return with success message. 
+
+        }
+//
+
+})
+
+router.post('/verifyEmail', async (req,res) =>{
+    //get email and code
+    //verify email and code with regex, if wrong, return with error.message
+
+    //query db with email. hash code.
+    //compare hash with db hash
+    //if true, return with status 200 and message OK
+    // if false, return with error.message(wrong code)
+})
+
 /*get deals
 router.get ('/deals', async(req,res)=>{
     try{
@@ -904,3 +1159,31 @@ router.get ('/deals', async(req,res)=>{
  
 
 export default router; 
+
+
+
+
+
+
+
+/*
+                                                                        "new": false, 
+                                                                        "kitchen": false, 
+                                                                        "bedroom": false,
+                                                                        "bathroom": false,
+                                                                        "kids": false,
+                                                                        "baby": false,
+                                                                        "men": false,
+                                                                        "women":false,
+                                                                        "gift":false,
+                                                                        "cookware": false,
+                                                                        "baking": false,
+                                                                        "decor": false,
+                                                                        "hot": false,
+                                                                        "laundry":false,
+                                                                        "storage":false,
+                                                                        "electricals":false,
+                                                                        "fitness":false,
+                                                                        "soldout":false,
+                                                                        "clearance":false, 
+                                                                        "exclusive": false,*/
