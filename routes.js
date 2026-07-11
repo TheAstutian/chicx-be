@@ -230,7 +230,7 @@ router.post('/turnstile', async(req,res)=>{
 
 router.post('/order', async (req,res)=>{
     
-    const orderObject = req.body.order 
+    const orderObject = req.body.order  
     orderObject.ID = randomId()
     orderObject.timeStamp = Date.now()
     var d = new Date(Date.now());
@@ -246,7 +246,13 @@ router.post('/order', async (req,res)=>{
         const apiKey = process.env.BREVO_API; 
         const url = process.env.BREVO_URL;
 
-        const cartItemsHtml = orderObject.cart.map(item=>{
+        var deliveryInfo; 
+        if (orderObject.userDetails.delivery) {
+            deliveryInfo = `Deliver to <b>${orderObject.userDetails.address1}</b>`
+        } else {
+            deliveryInfo = `Pickup at <b>18, Fashola Street, Diamond Estate Command, Lagos, Nigeria</b>`
+        }
+         const cartItemsHtml = orderObject.cart.map(item=>{
             return `
             <tr style="border-bottom: 1px solid #eee;">
             <td style="padding:10px; width:80px;">
@@ -268,7 +274,7 @@ router.post('/order', async (req,res)=>{
             </tr>
             `
         }).join(''); 
-
+ 
         const emailData = {
             sender: {
                 name: 'Goldyvhista Hubz',
@@ -293,10 +299,12 @@ router.post('/order', async (req,res)=>{
                 <p style="font-size: 14px; color: #555;">
                     We've received your order **#${orderObject.ID}** and will contact you as soon as your package is shipped. You can find details of your purchase below.
                 </p>
+
                 
                 <h2 style="font-size: 18px; color: #333; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Order Summary</h2>
                 <p style="font-size: 12px; color: #777; margin: 5px 0;">Order Date: ${orderObject.date}</p>
                 <p style="font-size: 12px; color: #777; margin: 5px 0;">Order ID: ${orderObject.ID}</p>
+                <p style="font-size: 12px; color: #777; margin: 5px 0;">${deliveryInfo}</p>
 
                 <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin-top: 20px; border-collapse: collapse;">
                     <thead>
@@ -321,7 +329,7 @@ router.post('/order', async (req,res)=>{
                 </table>
                 
                 <p style="font-size: 12px; color: #888; text-align: center; margin-top: 40px;">
-                    Need help? Reply to this email or call us at (123) 456-7890.
+                    Need help? Call us at 08145887534.
                 </p>
             </div>
         </div>
@@ -362,7 +370,7 @@ router.post('/order', async (req,res)=>{
                 </p>
 
                 <p style="font-size: 16px; color: #333;">
-                    Customer Address: <b>${orderObject.userDetails.address1}</b>
+                    Delivery Method: ${deliveryInfo}
                 </p>
                 <p style="font-size: 16px; color: #333;">
                     Order Time and Date: ${orderObject.date}
@@ -863,7 +871,7 @@ router.delete('/auth/admin-delete/:id', async(req,res)=>{
         res.send(result).status(200)
     }catch(err){
         console.log(err)
-    }
+    } 
 })
 
 //get popular items
@@ -900,6 +908,14 @@ console.log ("one:", one, " /two: ", two, " /three: ", three, " /four: ", four)
 
 const sendCodeToEmail = async (code, userEmail)=> {
  
+    if (!userEmail || userEmail===undefined){
+        return {
+            "status": "failed",
+            "message": "username is empty or undefined"
+        }
+    }
+
+
          const apiKey = process.env.BREVO_API; 
         const url = process.env.BREVO_URL;
         const logoUrl = 'https://i.ibb.co/5x95NZ3J/GDVSTA.png'
